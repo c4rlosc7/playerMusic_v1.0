@@ -8,8 +8,8 @@
 
 using namespace std;
 using namespace zmqpp;
-////////////////////////////play to music 
 
+////////////////////////////play to music 
 void playermusica(){
 	sf::Music music;
 	if (!music.openFromFile("Hello.ogg"))
@@ -63,17 +63,9 @@ int main(){
 	  fstream o("Hello.ogg", ios::out);
 	  o << path;
 	  playermusica();
-	  //o.close();  
-	  //sf::Music music;
-	  //if (!music.openFromFile("Hello.ogg"))
-	    //return -1; // error
-			 
-	  //music.play();
 	  o.close();
 	  int y;
 	  cin >> y;	  
-  }
-  
-	
+  }  	
   return 0;
 }

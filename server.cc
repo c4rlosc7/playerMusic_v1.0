@@ -1,4 +1,4 @@
-//Carlos Andres Martinez - Cliente Servidor - Buscar - Reproducir 
+//Carlos Andres Martinez - Cliente Servidor
 #include <iostream>  // std::cout
 #include <fstream>  //std::ifstream
 #include <string>
@@ -12,64 +12,50 @@ using namespace zmqpp;
 string findtoname(int a){
 
 	map<int,string> map_name;
-	fstream ficheroEntrada;
+	fstream inputFile;
 	int indx=0;
 	string nombre;
 	string name_song;
-	ficheroEntrada.open ("namesong.txt",ios::in);
+	inputFile.open ("namesong.txt",ios::in);
 			
-		if (ficheroEntrada.is_open()) {		
-			while (! ficheroEntrada.eof() ) { //while not (end of file) 
+		if (inputFile.is_open()) {		
+			while (! inputFile.eof() ) { //while not (end of file) 
 								
-				getline(ficheroEntrada , nombre);
+				getline(inputFile , nombre);
 				map_name[indx]=nombre;					
 				cout<< indx << " | " << nombre << endl;			
 				indx++;
 			}
-			ficheroEntrada.close();
+			inputFile.close();
 		}else cout << "Fichero inexistente" << endl;
-	//return map_musica;	
-	//cout << "Ingrese Key a buscar: " << endl;
-	//cin >> a;
 	std::map<int, string>::iterator it=map_name.find(a); // buscar
-	//cout << "Key => " << (*it).second << endl;
 	name_song = (*it).second;
 	return name_song;
-	//for (map<int, string>::iterator it=map_musica.begin(); it!=map_musica.end(); it++){
-	//	cout << (*it).first << " => " << (*it).second << endl;
-	//}		
 }	
 
 //////////////////////////////// find to path
 string findtofile(int b){
 
 	map<int,string> map_path;
-	fstream ficheroEntrada;
+	fstream inputFile;
 	int indx=0;
 	string nombre;
 	string path;
-	ficheroEntrada.open ("path.txt",ios::in);
+	inputFile.open ("path.txt",ios::in);
 			
-		if (ficheroEntrada.is_open()) {		
-			while (! ficheroEntrada.eof() ) { //while not (end of file) 
+		if (inputFile.is_open()) {		
+			while (! inputFile.eof() ) { //while not (end of file) 
 								
-				getline(ficheroEntrada , nombre);
+				getline(inputFile , nombre);
 				map_path[indx]=nombre;					
 				cout<< indx << " | " << nombre << endl;			
 				indx++;
 			}
-			ficheroEntrada.close();
+			inputFile.close();
 		}else cout << "Fichero inexistente" << endl;
-	//return map_musica;	
-	//cout << "Ingrese Key a buscar: " << endl;
-	//cin >> a;
 	std::map<int, string>::iterator it=map_path.find(b); // buscar
-	//cout << "Key => " << (*it).second << endl;
 	path = (*it).second;
 	return path;
-	//for (map<int, string>::iterator it=map_musica.begin(); it!=map_musica.end(); it++){
-	//	cout << (*it).first << " => " << (*it).second << endl;
-	//}		
 }	
 
 ////////////////////////////transfer to file 
@@ -77,7 +63,6 @@ vector<char> ReadAllBytes(const string &filename)
 {
     ifstream ifs(filename, ios::binary|ios::ate); // read filename in binary and stay end file
     ifstream::pos_type pos = ifs.tellg(); // position
-    //cout << pos <<endl;
     vector<char>  result(pos); // create vector with size pos
 
     ifs.seekg(0, ios::beg); // stay begin file 
@@ -129,7 +114,6 @@ int main()
 		cout << name_path << endl;
 
 		message g;
-		//g << name_path;
 		filetomessage(name_path,g);
 		s.send(g);
   }	
