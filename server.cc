@@ -9,7 +9,7 @@ using namespace std;
 using namespace zmqpp;
 
 //////////////////////////////// find to name song 
-string findtoname(int a){
+string loadToNameSong(int a){
 
 	map<int,string> map_name;
 	fstream inputFile;
@@ -34,7 +34,7 @@ string findtoname(int a){
 }	
 
 //////////////////////////////// find to path
-string findtofile(int b){
+string findToPath(int b){
 
 	map<int,string> map_path;
 	fstream inputFile;
@@ -68,7 +68,20 @@ vector<char> ReadAllBytes(const string &filename)
     ifs.seekg(0, ios::beg); // stay begin file 
     ifs.read(&result[0], pos); //how much to read 
 
-    return result;
+    int bytes = 100 * 1024; //102400    
+    int interSize = 0;    
+
+    for (int i = 2; bytes < pos; i++)		
+    {
+    	vector<char>  part(bytes);
+	    ifs.seekg(interSize, ios::beg); // stay begin file, beginning of the stream
+	    ifs.read(part.data(), bytes); //read     	
+		interSize = ifs.gcount(); //Get character count 102400 -      		
+		bytes = interSize * i;	   
+		cout << interSize; 
+		return part;
+    }        
+    //return result;
 }
 
 void filetomessage(const string &filename, message &r){
@@ -78,44 +91,45 @@ void filetomessage(const string &filename, message &r){
 
 int main()
 {
-  cout << "SERVER" << endl;
+  cout << "SERVER-MUSIC-PLAYER" << endl;
   context ctx;
 
-  socket s(ctx, socket_type::rep);
+  socket s(ctx, socket_type::xrep);
   s.bind("tcp://*:5555");
 	
 	while(true){ 
 
-		message m;
-		s.receive(m);       // receive message with buscar and #
+		message r;
+		s.receive(r);       // r [id, "buscar" o "reproducir" ,number]
 
-		string text;
-		m >> text;          // string buscar
-		int n;
-		m >> n;               // integer #
-		string text_server;
+		string id;          // id
+		r >> id;
 
-		if (text == "buscar"){
-			text_server = findtoname(n);
+		string operation;  // operation (buscar)(reproducir)
+		r >> operation;   
+
+		int n;             // number to search
+		r >> n;               
+
+		string text_server;  // nombre de la cancion / name to song 
+		string name_path;    // ruta / path 
+		message sc;
+		if (operation == "buscar"){
+
+			text_server = loadToNameSong(n);
 			cout << text_server << endl;
+			
+			sc << id;
+			sc << text_server;
+			s.send(sc);		
 
-			message r;				
-			r << text_server;
-			s.send(r);		
+		}else if(operation == "reproducir"){
+			name_path = findToPath(n);    // path to file 
+			cout << name_path << endl;
+			sc << id;
+			filetomessage(name_path,sc);
+			s.send(sc);
 		}		
-
-		message l;
-		s.receive(l);
-		int index_song;
-		l >> index_song;
-
-		string name_path;
-		name_path = findtofile(index_song);    // path to file 
-		cout << name_path << endl;
-
-		message g;
-		filetomessage(name_path,g);
-		s.send(g);
   }	
 	return 0;
 }

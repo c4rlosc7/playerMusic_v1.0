@@ -1,6 +1,6 @@
-/home/carlos/Escritorio/musica/01_Milagro.ogg
-/home/carlos/Escritorio/musica/02_Familia_Es_la_Oportunidad_.ogg
-/home/carlos/Escritorio/musica/03_Los_Que_Marcan_el_Camino.ogg
-/home/carlos/Escritorio/musica/04_Poder_Latino.ogg
-/home/carlos/Escritorio/musica/05_Loco_Pro.ogg
-/home/carlos/Escritorio/musica/06_Dejar_de_Ser.ogg
+/home/carlos/Escritorio/musica/00_Milagro.ogg
+/home/carlos/Escritorio/musica/01_Familia_Es_la_Oportunidad_.ogg
+/home/carlos/Escritorio/musica/02_Los_Que_Marcan_el_Camino.ogg
+/home/carlos/Escritorio/musica/03_Poder_Latino.ogg
+/home/carlos/Escritorio/musica/04_Loco_Pro.ogg
+/home/carlos/Escritorio/musica/05_Dejar_de_Ser.ogg

@@ -10,62 +10,82 @@ using namespace std;
 using namespace zmqpp;
 
 ////////////////////////////play to music 
-void playermusica(){
+void playermusica(string string_in, string usr){
+	string songPlay = usr + "-" + "song.ogg";
+	fstream ob(songPlay, ios::out);
+	ob << string_in;	
 	sf::Music music;
-	if (!music.openFromFile("Hello.ogg"))
+	if (!music.openFromFile(songPlay))
 	    cout<<"error";//return -1; // error
 	music.play();
     int i;
-    cin >> i;			
+    cin >> i;	
+    ob.close();		
 }
 
 int main(){
-  cout << "CLIENTE" << endl;
+  cout << "CLIENTE-MUSIC-PLAYER" << endl;
   context ctx;
 
-  socket s(ctx, socket_type::req);
+  socket s(ctx, socket_type::xreq);
   s.connect("tcp://localhost:5555");
-  while(true){
-	  string operation;                           // Enter operation 
-	  cout << "Entre la operacion : ";
-	  cin >> operation;
+  poller p;
+  p.add(s, poller::poll_in);
+  
+  string username;
+  message m;
+  cout << "nombre usuario: ";
+  cin >> username;  
+  int c;
+  int estado = 1;
+	while(true)
+	{
+		while(estado == 1)
+		{
+			cout << "MUSIC-PLAYER "	<< endl;
+			cout << "1.Buscar 2.Reproducir 0.Resultado(buscar-reproducir): ";
+			cin >> c;
 
-	  int number;                                 // Enter number 
-	  cout << "Entre el numero 1-5: ";
-	  cin >> number;
+			switch(c)
+			{
+				case 1: 		                        // m [id,"buscar",number]	  	
+					int number;  
+					cout << "Ingrese el indice a buscar solo tenemos 1-5: ";
+					cin >> number;
+					m << "buscar";
+					m << number;
+					s.send(m);
+					break;
+					
+				case 2:                                  // m [id,"reproducir",number]
+					int index_songc;				
+					cout << "Entre el indice de la cancion que desea: "; 
+					cin >> index_songc;	
+					m << "reproducir";
+					m << index_songc;
+					s.send(m);	
+					break;		
 
-	  message m;                            // make message to send 
-	  m << operation;
-	  m << number;
-	  s.send(m);
-		
-	  message r;                     // receive string exitoso
-	  s.receive(r);
-		
-	  string text;
-	  r >> text;
-	  cout << "El nombre de la cancion es: " << text << endl;
+				case 0:
+					if (p.poll()){
+						if (p.has_input(s)){
+							message rs;                     // receive string with message answertNSong
+							s.receive(rs);	
+							string resultFinal;
+							rs >> resultFinal;
+							//cout << resultFinal.size();
+							if (resultFinal.size() < 40){		
+								cout << "Nombre de la cancion: " << resultFinal << endl;
+							}else{
+								playermusica(resultFinal, username);
+							}							
+						}
+					}
 
-	  int index_songc;
-	  cout << "Entre el indice de la cancion que desea: ";     // make message to send 
-	  cin >> index_songc;
-	  message u;
-	  u << index_songc;
-	  s.send(u);
+					break;
+			}
 
-	  message i;
-	  s.receive(i);
-	  
-	  string path;
-	  i >> path;
-	  //cout << "La ruta es: " << path << endl;  	
-
-	  fstream o("Hello.ogg", ios::out);
-	  o << path;
-	  playermusica();
-	  o.close();
-	  int y;
-	  cin >> y;	  
-  }  	
+		}
+	}
   return 0;
 }
