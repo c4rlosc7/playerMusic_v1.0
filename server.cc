@@ -4,57 +4,10 @@
 #include <string>
 #include <list>
 #include <cassert>
+#include <map>
 #include <zmqpp/zmqpp.hpp>
 using namespace std;
 using namespace zmqpp;
-/*
-//////////////////////////////// find to name song 
-map<int, string> getList()
-{
-	map<int,string> map_name;
-	fstream inputFile;
-	int indx=0;
-	string nombre;
-	string name_song;
-	inputFile.open ("namesong.txt",ios::in);
-			
-		if (inputFile.is_open()) {		
-			while (! inputFile.eof() ) { //while not (end of file) 
-								
-				getline(inputFile , nombre);
-				map_name[indx]=nombre;					
-				//cout<< indx << " | " << nombre << endl;			
-				indx++;
-			}
-			inputFile.close();
-		}else cout << "Fichero inexistente" << endl;
-	return map_name;
-}	
-
-//////////////////////////////// find to path
-string getSong(int b)
-{
-	map<int,string> map_path;
-	fstream inputFile;
-	int indx=0;
-	string nombre;
-	string path;
-	inputFile.open ("path.txt",ios::in);
-			
-		if (inputFile.is_open()) {		
-			while (! inputFile.eof() ) { //while not (end of file) 
-								
-				getline(inputFile , nombre);
-				map_path[indx]=nombre;					
-				indx++;
-			}
-			inputFile.close();
-		}else cout << "Fichero inexistente" << endl;
-	std::map<int, string>::iterator it=map_path.find(b); // buscar
-	path = (*it).second;
-	return path;
-}	
-*/
 /////////////////CLASS-SONG-OBJECT-// name, artist, filename, Metodo string Getname
 class song{
 
@@ -82,59 +35,35 @@ class song{
 /////////////////CLASS-PLAYLIST-OBJECT-// lista de canciones name, Metodo add,size
 class playlist{
 	private:
-		list <song> songs;  // lista de objetos de tipo song 
+		//list <song> songs;  // lista de objetos de tipo song 
+		map<int,song> songs;
 		string name;		
 	public:		
 		playlist(){}
 		playlist(const string &n){ 
 			name = n;
 		}		
-		void add(song s){ //Add element at the end
-		songs.push_back(s);
+
+		void add(song s, int indx){ //Add element at the end
+		songs[indx] = s;
 		}		
+
 		int size(){ // Returns the number of elements on list
 		return songs.size();
-		}				
-};
-/////////////////CLASS-PLAYER-OBJECT-// mylist Metodo addsong
-class player{
-
-	private:
-		list <song> all;
-		list <playlist> mylists; // lista de obj de tipo playlist 
-
-	public:
-		player(){}
-		list <song> find(string name){ //funcion de tipo list <song> llamada find() all songs
-			list <song> result;// create to mylist
-			for(const song& s: all){
-				auto p = s.getname().find(name); 	
-				//cout << s.getname() << endl;
-				if (p != string::npos){ 
-					result.push_back(s);					
-					//cout << s.getname() << endl;
-				}
-			}
-			return result;         // retorna la lista de las canciones con la similitud de la busqueda
 		}
-/*
-		list <song> findtofilename(string name){ //funcion de tipo list <song> llamada find() all songs
-			list <song> result;// create to mylist
-			for(const song& s: all){
-				auto p = s.getfilename().find(name); 	
-				//cout << s.getname() << endl;
-				if (p != string::npos){ 
-					result.push_back(s);					
-					//cout << s.getname() << endl;
-				}
-			}
-			return result;         // retorna la lista de las canciones con la similitud de la busqueda
-		}						
-*/		
-		//Add element at the end
-		void addsong(song s){ 
-			all.push_back(s);			
-		}	
+
+		const string& getplaylist() const { 
+			return name; 
+		}
+
+		song songtofind(int x){
+			song songtofind1;
+			map<int, song>::iterator it=songs.find(x); // buscar
+			songtofind1 = (*it).second;
+			return songtofind1;					
+		}		
+
+		//map<int, song> listsongs(){ }
 };
 ////////////////////////////transfer to file 
 vector<char> ReadAllBytes(const string &filename)
@@ -162,68 +91,63 @@ int main()
   song e("Loco Pro", "A.N.I.M.A.L", "/home/carlos/Escritorio/musica/4_Loco_Pro.ogg");
   song f("Dejar de Ser", "A.N.I.M.A.L", "/home/carlos/Escritorio/musica/5_Dejar_de_Ser.ogg");
   playlist rock("rock"); // playlist rock 
-  rock.add(a);   //adicionar obj tipo song a la lista rock
-  rock.add(b);
-  rock.add(c);
-  rock.add(d);
-  rock.add(e);
-  rock.add(f);
-  player p;    // lista de obj playlist p
-  p.addsong(a);
-  p.addsong(b);
-  p.addsong(c);
-  p.addsong(d);
-  p.addsong(e);
-  p.addsong(f);
-  
+  rock.add(a,0);   //adicionar obj tipo song a la lista rock
+  rock.add(b,1);
+  rock.add(c,2);
+  rock.add(d,3);
+  rock.add(e,4);
+  rock.add(f,5);
+// Nombre del map, numero de elementos del map y los elementos del map
+  song nombre;  
+  int indice=0;
+  int longitud=rock.size();
+
   context ctx;
   socket s(ctx, socket_type::xrep);
-  s.bind("tcp://*:5555");
-	
+  s.bind("tcp://*:5555");	
 	while(true)
 	{ 
 		message r;
 		s.receive(r);
+		for(size_t i = 0; i < r.parts(); i++) {
+			cout << r.get(i) << endl;
+		}
 		string id;        // id 
 		r >> id;
 		int operador;     // 1 buscar, 2 reproducir   
 		r >> operador;
 		message sc;
-
 		if(operador == 1){             // 1 message [id,"lista",name-song]
-			string wordtofind;
-			r >> wordtofind;
-			list <song> s1 = p.find(wordtofind);				
+			cout <<"play list name: " << rock.getplaylist() << " #element: " << rock.size() << endl;			
 			sc << id;
-			sc << "lista";
-			for(const song& ss: s1){
-				sc << ss.getname();
-			}
-		  	int cap;  		  		
-		  	cap = s1.size();		
-		  	cout << "Canciones encontradas: " << cap << endl;  		  		
-		  	cout << "Partes: " << sc.parts() << endl;
+			sc << operador;
+			while(indice < longitud){
+  				nombre = rock.songtofind(indice);
+  				cout << "name song[" << indice <<"]: " << nombre.getname() << endl;
+  				sc << nombre.getname();
+  				indice++;
+  			}
+		  	cout << "Partes a enviar: " << sc.parts() << endl;
+		  	indice=0;
 		  	s.send(sc);
-		}else if(operador == 2){       // 2 message [id,"reproducir",namesong,string bytes]
-			string word;
-			r >> word;
-			list <song> s1 = p.find(word);				
+		}else if(operador == 2){       // 2 message [id,"reproducir",namesong,string bytes]			
+			int index;
+			r >> index;
+			nombre = rock.songtofind(index); // objeto encontrado 
+			string nombre_cancion;
+			nombre_cancion = nombre.getname(); // atributo nombre del objeto song
+			cout << "name song: " << nombre_cancion << endl;
 			sc << id;
-			sc << "reproducir";
+			sc << operador;
+
 			string pathfile;
-			for(const song& ss: s1){
-				pathfile = ss.getfilename();
-				sc << ss.getname();
-			}
-		  	//int cap;  		  				  	
-		  	//cap = s1.size();		
+			pathfile = nombre.getfilename();
+			sc << nombre_cancion;
 		  	cout << "ruta: " << pathfile << endl;  
 		  	filetomessage(pathfile,sc);
+		  	cout << "partes envia: " << sc.parts() << endl;
 			s.send(sc);		  	
-		  	//cout << "Partes: " << sc.parts() << endl;
-		  	//s.send(sc);			
-		}		
-
-  }	
+		}					
+  	}		
 	return 0;
 }

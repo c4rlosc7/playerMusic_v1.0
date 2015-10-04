@@ -23,16 +23,18 @@ void playermusica(string string_in, string usr){
     ob.close();		
 }
 
-int main(){
+int main(int argc, char **argv){	
+  string ip; 		// 10.253.96.236 U, 192.168.1.12 CASA 
+  ip = argv[1];
   //cout << "CLIENTE-MUSIC-PLAYER" << endl;
   context ctx;
 
   socket s(ctx, socket_type::xreq);
-  s.connect("tcp://localhost:5555");
+  s.connect("tcp://"+ip+":5555");
   poller p;
   p.add(s, poller::poll_in);
   string username;
-  cout << "Ingrese el nombre de usuario: ";
+  cout << "Nombre de usuario: ";
   cin >> username;
   int c;
   string keyword;
@@ -44,49 +46,54 @@ while(true)
 	cout << "-----------------CLIENT-MUSIC-PLAYER-----------------"	<< endl;
 	cout << "1.Buscar  2.Reproducir : ";
 	cin >> c;
-
 	switch(c)
 	{
 		case 1: 			  	
-  			cout << "-----------------Buscar-----------------" << endl;
-  			
-  			cout << "palabra a buscar: ";
-  			cin >> keyword;  
-
+  			cout << "Esperando respuesta...\n\n";
   			m << c;
-  			m << keyword;
   			s.send(m);	                  
-			break;            // id, 1, keyword
-
+  			for(size_t ii = 0; ii < m.parts(); ii++) {
+				cout << m.get(ii) << endl;
+			}
+			break;            // id, 1
 		case 2:                           
-			cout << "-----------------Reproducir-----------------" << endl;	
-				
-			cout << "Nombre cancion: "; 
-			cin >> keysong;	
 			m << c;
-			m << keysong;
-			s.send(m);	      // id, 2, keysong
-			break;	
+			
+			int index;
+			cout << "Indice: ";				
+			cin >> index;
+			m << index;
 
+			cout << "Esperando respuesta...\n\n";			
+		  	for(size_t i = 0; i < m.parts(); i++) {
+				cout << m.get(i) << endl;
+			}
+			s.send(m);	      // id, 2
+			break;	
 		default: cout << "Ingrese opcion correcta";
     		break;															
 	}		
-
   message r;
   s.receive(r);
-  string tarea;
-  r >> tarea;  
-  string stringsong;
-  r >> stringsong;
-  cout << "Canciones encontradas: " << r.parts() << endl;
 
-  if(tarea == "lista"){
-	  for(size_t i = 0; i < r.parts(); i++) {
-			cout << r.get(i) << endl;
-		}
-  }else if(tarea == "reproducir"){
+  int tarea;
+  r >> tarea;    
+  if(tarea == 1){
+  	cout << "Canciones encontradas: " << r.parts()-1<< endl;
+	for(size_t i = 1; i < r.parts(); i++) {
+		cout << "name song[" << i-1 <<"]: " << r.get(i) << endl;
+	}
+  }else if(tarea == 2){
+  	cout << "partes recibidas: " << r.parts() <<endl;
+  	string stringsong, nombre_cancion;
+  	r >> nombre_cancion >> stringsong;
+  	//cout << nombre_cancion << username << stringsong <<endl;
   	playermusica(stringsong, username);
+  	//for(size_t i = 0; i < r.parts(); i++) {
+	//	cout << r.get(i) << endl;
+	//}
   }
+
 }
   return 0;
 }
